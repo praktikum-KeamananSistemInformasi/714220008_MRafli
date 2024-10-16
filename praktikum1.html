@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Enkripsi dan Dekripsi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: #333;
+        }
+        h2 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: auto;
+            transition: transform 0.3s;
+        }
+        .container:hover {
+            transform: scale(1.02);
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #007BFF;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            font-size: 16px;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: #0056b3;
+            outline: none;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .steps {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            transition: background-color 0.3s;
+        }
+        .steps:hover {
+            background-color: #d1d1d1;
+        }
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                margin: 10px auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Simulasi Enkripsi dan Dekripsi</h1>
+    
+    <label for="algorithm">Pilih Algoritma:</label>
+    <select id="algorithm" onchange="updateDescription()">
+        <option value="AES">AES</option>
+        <option value="DES">DES</option>
+        <option value="3DES">3DES</option>
+        <option value="RC4">RC4</option>
+    </select>
+
+    <p class="description" id="algorithmDescription">AES adalah algoritma enkripsi simetris yang aman dan efisien, menggunakan kunci 128, 192, atau 256-bit untuk enkripsi dan dekripsi.</p>
+    
+    <label for="key">Masukkan Kunci (Key):</label>
+    <input type="text" id="key" placeholder="Masukkan kunci enkripsi...">
+    
+    <label for="plainText">Pesan (Plain Text):</label>
+    <textarea id="plainText" rows="4" placeholder="Masukkan teks yang ingin dienkripsi..."></textarea>
+    
+    <button onclick="encrypt()">Enkripsi</button>
+    <button onclick="decrypt()">Dekripsi</button>
+    
+    <h3>Hasil:</h3>
+    <textarea id="result" rows="4" readonly></textarea>
+    
+    <h3>Proses Enkripsi:</h3>
+    <div class="steps" id="encryptionSteps" readonly></div>
+</div>
+
+<script>
+    // Deskripsi algoritma enkripsi
+    const algorithmDescriptions = {
+        "AES": "AES adalah algoritma enkripsi simetris yang aman dan efisien, menggunakan kunci 128, 192, atau 256-bit untuk enkripsi dan dekripsi.",
+        "DES": "DES (Data Encryption Standard) adalah algoritma enkripsi simetris yang memproses blok 64-bit dengan kunci 56-bit, tetapi tidak lagi dianggap aman.",
+        "3DES": "3DES (Triple DES) menggunakan tiga iterasi algoritma DES untuk keamanan yang lebih tinggi, dengan panjang kunci hingga 168-bit.",
+        "RC4": "RC4 adalah algoritma stream cipher yang cepat, tetapi memiliki beberapa kelemahan keamanan, sehingga tidak lagi digunakan dalam aplikasi modern."
+    };
+
+    // Fungsi untuk memperbarui deskripsi berdasarkan pilihan algoritma
+    function updateDescription() {
+        const algorithm = document.getElementById('algorithm').value;
+        document.getElementById('algorithmDescription').innerText = algorithmDescriptions[algorithm];
+    }
+
+    // Fungsi enkripsi
+    function encrypt() {
+        const algorithm = document.getElementById('algorithm').value;
+        const key = document.getElementById('key').value;
+        const plainText = document.getElementById('plainText').value;
+        let encryptedText = '';
+        let steps = '';
+
+        if (key === '' || plainText === '') {
+            alert('Kunci dan teks tidak boleh kosong!');
+            return;
+        }
+
+        steps += `Teks asli: "${plainText}"\n`;
+        steps += `Kunci: "${key}"\n`;
+
+        switch(algorithm) {
+            case 'AES':
+                steps += '1. Memecah teks menjadi blok 128-bit.\n';
+                steps += '2. Menggunakan kunci untuk proses substitusi dan transposisi dalam 10-14 putaran.\n';
+                encryptedText = CryptoJS.AES.encrypt(plainText, key).toString();
+                steps += `3. Teks terenkripsi (Base64): ${encryptedText}\n`;
+                break;
+            case 'DES':
+                steps += '1. Memecah teks menjadi blok 64-bit.\n';
+                steps += '2. Menggunakan kunci untuk 16 putaran permutasi dan substitusi.\n';
+                encryptedText = CryptoJS.DES.encrypt(plainText, key).toString();
+                steps += `3. Teks terenkripsi (Base64): ${encryptedText}\n`;
+                break;
+            case '3DES':
+                steps += '1. Memecah teks menjadi blok 64-bit.\n';
+                steps += '2. Menggunakan tiga kunci untuk 48 putaran permutasi dan substitusi.\n';
+                encryptedText = CryptoJS.TripleDES.encrypt(plainText, key).toString();
+                steps += `3. Teks terenkripsi (Base64): ${encryptedText}\n`;
+                break;
+            case 'RC4':
+                steps += '1. Menghasilkan kunci dari kunci input dan mempersiapkan tabel S.\n';
+                steps += '2. Menghasilkan stream cipher dan mengenkripsi teks dengan XOR.\n';
+                encryptedText = CryptoJS.RC4.encrypt(plainText, key).toString();
+                steps += `3. Teks terenkripsi (Base64): ${encryptedText}\n`;
+                break;
+            default:
+                alert('Algoritma tidak dikenali!');
+                return;
+        }
+
+        document.getElementById('result').value = encryptedText;
+        document.getElementById('encryptionSteps').innerText = steps;
+    }
+
+    // Fungsi dekripsi
+    function decrypt() {
+        const algorithm = document.getElementById('algorithm').value;
+        const key = document.getElementById('key').value;
+        const encryptedText = document.getElementById('result').value; // Mengambil hasil enkripsi dari textarea hasil
+        let decryptedText = '';
+
+        if (key === '' || encryptedText === '') {
+            alert('Kunci dan teks tidak boleh kosong!');
+            return;
+        }
+
+        try {
+            switch(algorithm) {
+                case 'AES':
+                    decryptedText = CryptoJS.AES.decrypt(encryptedText, key).toString(CryptoJS.enc.Utf8);
+                    break;
+                case 'DES':
+                    decryptedText = CryptoJS.DES.decrypt(encryptedText, key).toString(CryptoJS.enc.Utf8);
+                    break;
+                case '3DES':
+                    decryptedText = CryptoJS.TripleDES.decrypt(encryptedText, key).toString(CryptoJS.enc.Utf8);
+                    break;
+                case 'RC4':
+                    decryptedText = CryptoJS.RC4.decrypt(encryptedText, key).toString(CryptoJS.enc.Utf8);
+                    break;
+                default:
+                    alert('Algoritma tidak dikenali!');
+                    return;
+            }
+        } catch (error) {
+            alert('Kesalahan dalam proses dekripsi! Pastikan kunci dan teks terenkripsi benar.');
+            return;
+        }
+
+        document.getElementById('result').value = decryptedText;
+    }
+</script>
+
+</body>
+</html>
