@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Security Assessment Form</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: #333;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h2 {
+            color: #333;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group select {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+        .description {
+            font-size: 12px;
+            color: #666;
+            margin-top: 3px;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #mitigasiResult {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            font-size: 16px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .priority-high { color: red; font-weight: bold; }
+        .priority-medium { color: orange; font-weight: bold; }
+        .priority-low { color: green; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>Data Security Assessment Form</h2>
+    <form id="securityForm">
+        <div class="form-group">
+            <label for="asset1">Aset</label>
+            <select id="asset1" name="asset1" onchange="updateThreats()">
+                <option value="">Pilih Aset</option>
+                <option value="Server">Server</option>
+                <option value="Server API Eksternal">Server API Eksternal</option>
+                <option value="Database">Database</option>
+                <option value="Aplikasi Mobile">Aplikasi Mobile</option>
+                <option value="Data Pengguna">Data Pengguna</option>
+                <option value="Jaringan Internal">Jaringan Internal</option>
+                <option value="Sistem Monitoring">Sistem Monitoring</option>
+                <option value="Backup dan Recovery System">Backup dan Recovery System</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="attack1">Ancaman</label>
+            <select id="attack1" name="attack1">
+                <option value="">Pilih Ancaman</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="d1">Damage (D)</label>
+            <input type="number" id="d1" name="d1" min="0" max="10">
+            <div class="description">0 - Tidak ada kerusakan, 10 - Kerusakan total pada aset atau data.</div>
+        </div>
+        <div class="form-group">
+            <label for="r1">Reproducibility (R)</label>
+            <input type="number" id="r1" name="r1" min="0" max="10">
+            <div class="description">0 - Sulit direproduksi, 10 - Mudah direproduksi.</div>
+        </div>
+        <div class="form-group">
+            <label for="e1">Exploitability (E)</label>
+            <input type="number" id="e1" name="e1" min="0" max="10">
+            <div class="description">0 - Sulit dieksploitasi, 10 - Mudah dieksploitasi.</div>
+        </div>
+        <div class="form-group">
+            <label for="a1">Affected Users (A)</label>
+            <input type="number" id="a1" name="a1" min="0" max="10">
+            <div class="description">0 - Pengguna tidak terdampak, 10 - Semua pengguna terdampak.</div>
+        </div>
+        <div class="form-group">
+            <label for="d2">Discoverability (D)</label>
+            <input type="number" id="d2" name="d2" min="0" max="10">
+            <div class="description">0 - Sulit ditemukan, 10 - Mudah ditemukan.</div>
+        </div>
+
+        <div class="button-container">
+            <button type="button" onclick="showResults()">Submit</button>
+        </div>
+    </form>
+
+    <div id="mitigasiResult">
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th>Aset</th>
+                    <th>Ancaman</th>
+                    <th>Total DREAD</th>
+                    <th>Prioritas</th>
+                    <th>Mitigasi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Results will be appended here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const results = [];
+        const threatsMap = {
+            "Server": ["Tampering", "Denial of Service"],
+            "Server API Eksternal": ["Tampering", "Spoofing", "Information Disclosure"],
+            "Database": ["Information Disclosure", "Elevation of Privilege"],
+            "Aplikasi Mobile": ["Tampering", "Repudiation"],
+            "Data Pengguna": ["Repudiation", "Information Disclosure"],
+            "Jaringan Internal": ["Denial of Service", "Spoofing"],
+            "Sistem Monitoring": ["Tampering", "Denial of Service"],
+            "Backup dan Recovery System": ["Tampering", "Information Disclosure"],
+        };
+
+        const mitigasiMap = {
+            "Tampering": {
+                "Tinggi": "Implementasi kontrol akses ketat dan enkripsi data.",
+                "Menengah": "Audit log untuk memonitor perubahan data.",
+                "Rendah": "Validasi input dan monitoring dasar."
+            },
+            "Denial of Service": {
+                "Tinggi": "Distribusi server, pemantauan traffic, dan batasan permintaan.",
+                "Menengah": "Filter IP untuk permintaan berulang dari sumber yang sama.",
+                "Rendah": "Pengaturan bandwidth yang lebih baik."
+            },
+            "Spoofing": {
+                "Tinggi": "Autentikasi multi-faktor dan enkripsi komunikasi.",
+                "Menengah": "Penggunaan SSL/TLS pada server.",
+                "Rendah": "Validasi identitas dasar."
+            },
+            "Information Disclosure": {
+                "Tinggi": "Penggunaan enkripsi pada data sensitif.",
+                "Menengah": "Pengaturan kontrol akses berbasis peran.",
+                "Rendah": "Penghapusan informasi tidak perlu dalam respons."
+            },
+            "Repudiation": {
+                "Tinggi": "Pencatatan log transaksi dan tanda tangan digital.",
+                "Menengah": "Audit sistem dan autentikasi pengguna.",
+                "Rendah": "Validasi identitas dasar."
+            },
+            "Elevation of Privilege": {
+                "Tinggi": "Pemisahan peran dan hak akses berbasis aturan.",
+                "Menengah": "Kontrol otorisasi tambahan.",
+                "Rendah": "Monitoring aktivitas pengguna."
+            }
+        };
+
+        function updateThreats() {
+            const asset = document.getElementById("asset1").value;
+            const attackSelect = document.getElementById("attack1");
+
+            attackSelect.innerHTML = '<option value="">Pilih Ancaman</option>';
+            if (threatsMap[asset]) {
+                threatsMap[asset].forEach(threat => {
+                    const option = document.createElement("option");
+                    option.value = threat;
+                    option.textContent = threat;
+                    attackSelect.appendChild(option);
+                });
+            }
+        }
+
+        function showResults() {
+            const asset = document.getElementById("asset1").value;
+            const attack = document.getElementById("attack1").value;
+            const d = parseInt(document.getElementById("d1").value || 0);
+            const r = parseInt(document.getElementById("r1").value || 0);
+            const e = parseInt(document.getElementById("e1").value || 0);
+            const a = parseInt(document.getElementById("a1").value || 0);
+            const d2 = parseInt(document.getElementById("d2").value || 0);
+
+            const totalDREAD = d + r + e + a + d2;
+
+            let prioritas;
+            if (totalDREAD >= 35) {
+                prioritas = "Tinggi";
+            } else if (totalDREAD >= 20) {
+                prioritas = "Menengah";
+            } else {
+                prioritas = "Rendah";
+            }
+
+            const mitigasi = mitigasiMap[attack] && mitigasiMap[attack][prioritas] ? mitigasiMap[attack][prioritas] : "Mitigasi belum tersedia.";
+
+            const result = { asset, attack, totalDREAD, prioritas, mitigasi };
+            results.push(result);
+            renderResults();
+        }
+
+        function renderResults() {
+            const tbody = document.querySelector("#resultTable tbody");
+            tbody.innerHTML = '';
+
+            results.forEach(result => {
+                const row = document.createElement("tr");
+
+                const priorityClass = result.prioritas.includes("Tinggi") ? "priority-high" :
+                                      result.prioritas.includes("Menengah") ? "priority-medium" :
+                                      "priority-low";
+
+                row.innerHTML = `
+                    <td>${result.asset}</td>
+                    <td>${result.attack}</td>
+                    <td>${result.totalDREAD}</td>
+                    <td class="${priorityClass}">${result.prioritas}</td>
+                    <td>${result.mitigasi}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
